@@ -1,10 +1,12 @@
 'use client'
-import Image from 'next/image'
 import { useEffect, useState } from 'react';
-import io from 'Socket.IO-client'
+import io from 'Socket.IO-client';
 let socket
 
+
 export default function Home() {
+ 
+
   useEffect(() => {
     socketInitializer()
   }, []);
@@ -13,14 +15,25 @@ export default function Home() {
     await fetch('/api/socket')
     socket = io()
 
-    socket.on('connect', () => {
+    socket.on('connection', () => {
       console.log('connected')
     })
+
+    socket.on('update-input', msg => {
+      console.log(msg);
+      setFinalText(msg);
+    })
   }
-  const [text, setText] = useState("");
+
+  const [currentText, setCurrentText] = useState("");
+  const [finalText, setFinalText] = useState("");
 
   function doSomething(newText: string): void {
-    setText(newText);
+    setCurrentText(newText);
+  }
+
+  function submitText(text: string): void {
+    socket.emit('input-change', text);
   }
 
   return (
@@ -30,8 +43,9 @@ export default function Home() {
         const socket = io();
       </script>
       <h1>Hello WOrld!</h1>
-      <input type="text" onChange={(current) => doSomething(current.target.value)} value={text} />
-      <p>{text}</p>
+      <input type="text" onChange={(current) => doSomething(current.target.value)} value={currentText} />
+      <button onClick={() => submitText(currentText)}>SUBMIT SUKA</button>
+      <h1>{finalText}</h1>
     </main>
   )
 }
